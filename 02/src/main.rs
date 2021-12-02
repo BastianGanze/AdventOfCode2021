@@ -1,7 +1,6 @@
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
-use std::collections::VecDeque;
 
 type Lines = io::Lines<io::BufReader<File>>;
 
@@ -31,9 +30,8 @@ fn part_1(commands: Lines) {
 
     for command_result in commands {
         if let Ok(command) = command_result {
-            let mut command_instructions = command.split_whitespace();
-            let instruction = command_instructions.next().unwrap();
-            let instruction_amount: i32 = command_instructions.next().unwrap().parse::<i32>().unwrap();
+            let (instruction, instruction_amount) = command.split_once(' ').unwrap();
+            let instruction_amount: i32 = instruction_amount.parse().unwrap();
             match instruction {
                 "up" => {
                     depth = depth - instruction_amount;
@@ -53,13 +51,12 @@ fn part_1(commands: Lines) {
 
 fn part_2(commands: Lines) {
     let mut depth = 0;
-    let mut horizontal = 0;
     let mut aim= 0;
+    let mut horizontal = 0;
     for command_result in commands {
         if let Ok(command) = command_result {
-            let mut command_instructions = command.split_whitespace();
-            let instruction = command_instructions.next().unwrap();
-            let instruction_amount: i32 = command_instructions.next().unwrap().parse::<i32>().unwrap();
+            let (instruction, instruction_amount) = command.split_once(' ').unwrap();
+            let instruction_amount: i32 = instruction_amount.parse().unwrap();
             match instruction {
                 "up" => {
                     aim = aim - instruction_amount;
