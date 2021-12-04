@@ -1,4 +1,5 @@
 #![feature(drain_filter)]
+#![feature(test)]
 
 use crate::bingo_board::{parse_board_data, BingoBoard, MarkNumberResult};
 use std::collections::HashMap;
@@ -9,8 +10,11 @@ fn main() {
     match std::fs::read_to_string("./src/04.txt") {
         Ok(text) => {
             let (numbers, mut bingo_boards) = parse_board_data(&text);
-            part_1(numbers.clone(), &mut bingo_boards.clone());
-            part_2(numbers, &mut bingo_boards);
+            println!(
+                "Solution is 1 {}",
+                part_1(numbers.clone(), &mut bingo_boards.clone())
+            );
+            println!("Solution is 2 {}", part_2(numbers, &mut bingo_boards));
         }
         Err(err) => {
             println!("{:?}", err);
@@ -18,23 +22,20 @@ fn main() {
     }
 }
 
-fn part_1(numbers: Vec<u32>, bingo_boards: &mut HashMap<u32, BingoBoard<5>>) {
+pub fn part_1(numbers: Vec<u32>, bingo_boards: &mut HashMap<u32, BingoBoard<5>>) -> u32 {
     for number in numbers {
         for board_id_that_one in play_game(number, bingo_boards) {
-            println!(
-                "Solution is 1 {}",
-                bingo_boards
-                    .get(&board_id_that_one)
-                    .unwrap()
-                    .get_sum_of_unmarked_fields()
-                    * number
-            );
-            return;
+            return bingo_boards
+                .get(&board_id_that_one)
+                .unwrap()
+                .get_sum_of_unmarked_fields()
+                * number;
         }
     }
+    return 0;
 }
 
-fn part_2(numbers: Vec<u32>, bingo_boards: &mut HashMap<u32, BingoBoard<5>>) {
+pub fn part_2(numbers: Vec<u32>, bingo_boards: &mut HashMap<u32, BingoBoard<5>>) -> u32 {
     let mut last_sum_some_of_unmarked_fields: u32 = 0;
     let mut last_number_played: u32 = 0;
 
@@ -46,10 +47,7 @@ fn part_2(numbers: Vec<u32>, bingo_boards: &mut HashMap<u32, BingoBoard<5>>) {
         }
     }
 
-    println!(
-        "Solution is 2 {}",
-        last_sum_some_of_unmarked_fields * last_number_played
-    );
+    return last_sum_some_of_unmarked_fields * last_number_played;
 }
 
 pub fn play_game<const N: usize>(
@@ -67,8 +65,10 @@ pub fn play_game<const N: usize>(
 
 #[cfg(test)]
 mod tests {
+    extern crate test;
     use super::*;
     use crate::bingo_board::parse_board_data;
+    use test::Bencher;
 
     #[test]
     pub fn play_test_game() {
@@ -91,6 +91,50 @@ mod tests {
             }
             Err(err) => {
                 panic!("{:?}", err);
+            }
+        }
+    }
+
+    #[bench]
+    fn bench_parse(b: &mut Bencher) {
+        match std::fs::read_to_string("./src/04.txt") {
+            Ok(text) => {
+                b.iter(|| {
+                    let (_, _) = parse_board_data::<5>(&text);
+                });
+            }
+            Err(err) => {
+                println!("{:?}", err);
+            }
+        }
+    }
+
+    #[bench]
+    fn bench_part_1(b: &mut Bencher) {
+        match std::fs::read_to_string("./src/04.txt") {
+            Ok(text) => {
+                let (numbers, bingo_boards) = parse_board_data(&text);
+                b.iter(|| {
+                    assert_eq!(part_1(numbers.clone(), &mut bingo_boards.clone()), 82440);
+                });
+            }
+            Err(err) => {
+                println!("{:?}", err);
+            }
+        }
+    }
+
+    #[bench]
+    fn bench_part_2(b: &mut Bencher) {
+        match std::fs::read_to_string("./src/04.txt") {
+            Ok(text) => {
+                let (numbers, bingo_boards) = parse_board_data(&text);
+                b.iter(|| {
+                    assert_eq!(part_2(numbers.clone(), &mut bingo_boards.clone()), 20774);
+                });
+            }
+            Err(err) => {
+                println!("{:?}", err);
             }
         }
     }
