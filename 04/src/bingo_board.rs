@@ -1,12 +1,13 @@
 use std::collections::{HashMap, VecDeque};
 
 #[derive(Debug, PartialEq)]
-pub enum CheckNumberResult {
+pub enum MarkNumberResult {
     NumberDoesNotExist,
     NumberChecked,
     GameWon,
 }
 
+#[derive(Clone)]
 pub struct BingoBoard<const N: usize> {
     fields: HashMap<u32, (usize, usize)>,
     size: usize,
@@ -60,7 +61,7 @@ impl<const N: usize> BingoBoard<N> {
         out
     }
 
-    pub fn mark_number(&mut self, num: u32) -> CheckNumberResult {
+    pub fn mark_number(&mut self, num: u32) -> MarkNumberResult {
         match self.fields.get(&num) {
             Some((x, y)) => {
                 self.sum_of_all_marked_fields = self.sum_of_all_marked_fields + num;
@@ -69,11 +70,11 @@ impl<const N: usize> BingoBoard<N> {
                 if self.column_checked_count[*x] == self.size
                     || self.row_checked_count[*y] == self.size
                 {
-                    return CheckNumberResult::GameWon;
+                    return MarkNumberResult::GameWon;
                 }
-                CheckNumberResult::NumberChecked
+                MarkNumberResult::NumberChecked
             }
-            None => CheckNumberResult::NumberDoesNotExist,
+            None => MarkNumberResult::NumberDoesNotExist,
         }
     }
 
@@ -135,10 +136,10 @@ mod tests {
      1 12 20 15 19";
         let mut bingo_board: BingoBoard<5> = BingoBoard::new(board);
 
-        assert_eq!(bingo_board.mark_number(2), CheckNumberResult::NumberChecked);
+        assert_eq!(bingo_board.mark_number(2), MarkNumberResult::NumberChecked);
         assert_eq!(
             bingo_board.mark_number(50),
-            CheckNumberResult::NumberDoesNotExist
+            MarkNumberResult::NumberDoesNotExist
         );
     }
 
@@ -156,7 +157,7 @@ mod tests {
         bingo_board.mark_number(8);
         bingo_board.mark_number(21);
         bingo_board.mark_number(6);
-        assert_eq!(bingo_board.mark_number(1), CheckNumberResult::GameWon);
+        assert_eq!(bingo_board.mark_number(1), MarkNumberResult::GameWon);
         assert_eq!(
             bingo_board.get_sum_of_unmarked_fields(),
             sum_of_all_numbers - 22 - 8 - 21 - 6 - 1
@@ -176,7 +177,7 @@ mod tests {
         bingo_board.mark_number(12);
         bingo_board.mark_number(20);
         bingo_board.mark_number(15);
-        assert_eq!(bingo_board.mark_number(19), CheckNumberResult::GameWon);
+        assert_eq!(bingo_board.mark_number(19), MarkNumberResult::GameWon);
         assert_eq!(
             bingo_board.get_sum_of_unmarked_fields(),
             sum_of_all_numbers - 1 - 12 - 20 - 15 - 19
