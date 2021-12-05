@@ -1,38 +1,57 @@
-enum Binary {
-    ONE,
-    ZERO,
-}
+#![feature(test)]
+
+type ParseOutput = String;
+type Solution = u32;
 
 fn main() {
-    match std::fs::read_to_string("./src/04.txt") {
-        Ok(text) => {
-            let lines: Vec<&str> = text.split('\n').collect();
-            part_1(lines.clone());
-            part_2(lines);
-        }
-        Err(err) => {
-            println!("{:?}", err);
-        }
+    let parse_output = parse_input_file("");
+    println!("Solution to part 1 is {}", part_1(parse_output.clone()));
+    println!("Solution to part 2 is {}", part_2(parse_output.clone()));
+}
+
+fn parse_input_file(input_file: &str) -> ParseOutput {
+    todo!()
+}
+
+fn part_1(parse_output: ParseOutput) -> Solution {
+    todo!()
+}
+
+fn part_2(parse_output: ParseOutput) -> Solution {
+    todo!()
+}
+
+#[cfg(test)]
+mod tests {
+    extern crate test;
+    use super::*;
+    use test::Bencher;
+
+    #[test]
+    pub fn it_works() {
+        assert_eq!(true, true);
     }
-}
 
-fn part_1(bit_lines: Vec<&str>) {
-    todo!()
-}
+    #[bench]
+    fn bench_parse(b: &mut Bencher) {
+        b.iter(|| {
+            let _ = parse_input_file("");
+        });
+    }
 
-fn part_2(bit_lines: Vec<&str>) {
-    todo!()
-}
+    #[bench]
+    fn bench_part_1(b: &mut Bencher) {
+        let parse_output = parse_input_file("");
+        b.iter(|| {
+            part_1(parse_output.clone());
+        });
+    }
 
-#[test]
-fn it_works() {
-    match std::fs::read_to_string("./src/test.txt") {
-        Ok(text) => {
-            let lines: Vec<&str> = text.split('\n').collect();
-            assert_eq!(true, true);
-        }
-        Err(err) => {
-            println!("{:?}", err);
-        }
+    #[bench]
+    fn bench_part_2(b: &mut Bencher) {
+        let parse_output = parse_input_file("");
+        b.iter(|| {
+            part_2(parse_output.clone());
+        });
     }
 }
