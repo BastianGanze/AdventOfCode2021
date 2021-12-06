@@ -48,13 +48,9 @@ fn create_fish_school(parse_output: &ParseOutput) -> VecDeque<u64> {
 
 fn advance_days(fish_school: &mut FishSchool, days: u32) {
     for _ in 0..days {
-        let fish_day_0 = fish_school.pop_front().unwrap(); // 0
-        let fish_day_8 = fish_school.pop_back().unwrap(); // 8
-        let fish_day_7 = fish_school.pop_back().unwrap(); // 7
-
-        fish_school.push_back(fish_day_7 + fish_day_0); // 6
-        fish_school.push_back(fish_day_8); // 7
-        fish_school.push_back(fish_day_0); // 8
+        let fish_from_day_0 = fish_school.pop_front().unwrap();
+        fish_school[6] += fish_from_day_0; // day 7 fish have aged to 6 with the pop of the day 0 fish and day 0 fish are now day 6 again
+        fish_school.push_back(fish_from_day_0); // Day 0 fish gave birth and their offspring is now day 8
     }
 }
 
