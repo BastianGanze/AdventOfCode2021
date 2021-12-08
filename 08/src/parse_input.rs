@@ -46,6 +46,7 @@ fn get_segment_map(chars: Chars) -> Segment {
         map: 0b00000000,
         count: 0,
     };
+
     for char in chars {
         segment.count += 1;
         match char {
@@ -56,7 +57,7 @@ fn get_segment_map(chars: Chars) -> Segment {
             'e' => segment.map |= 0b0000100,
             'f' => segment.map |= 0b0000010,
             'g' => segment.map |= 0b0000001,
-            _ => unreachable!("Something other than what expected was matched."),
+            e => unreachable!("{}, Something other than what expected was matched.", e),
         }
     }
     segment

@@ -138,7 +138,7 @@ mod tests {
     extern crate test;
     use super::*;
     use crate::parse_input::{parse_main, parse_test};
-    use test::Bencher;
+    use test::{black_box, Bencher};
 
     #[test]
     pub fn test_part_1() {
@@ -163,7 +163,7 @@ mod tests {
     fn bench_part_1(b: &mut Bencher) {
         let parse_output = parse_main();
         b.iter(move || {
-            part_1(&parse_output);
+            assert_eq!(part_1(black_box(&parse_output)), 476);
         });
     }
 
@@ -171,7 +171,7 @@ mod tests {
     fn bench_part_2(b: &mut Bencher) {
         let parse_output = parse_main();
         b.iter(|| {
-            part_2(&parse_output);
+            assert_eq!(part_2(black_box(&parse_output)), 1011823);
         });
     }
 }
