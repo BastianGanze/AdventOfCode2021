@@ -71,12 +71,12 @@ fn part_2(parse_output: &ParseOutput) -> Solution {
     let mut basin_lookup_map: BasinLookupMap = HashMap::new();
     let fields_per_height = get_fields_per_height_map(parse_output);
     let mut basin_ids = 0;
-    for (current_height, fields) in fields_per_height.iter().enumerate() {
+    for (current_height, fields_of_current_height) in fields_per_height.iter().enumerate() {
         if current_height == 9 {
             break;
         }
 
-        for field in fields {
+        for field in fields_of_current_height {
             let surrounding_basins = get_surrounding_basins(
                 parse_output,
                 &mut basin_lookup_map,
@@ -87,6 +87,7 @@ fn part_2(parse_output: &ParseOutput) -> Solution {
                 max_x,
             );
 
+            // There is already a basin at this location
             if let Some(basin_id) = basin_lookup_map.get(field) {
                 let basin_to_merge_into_id = basin_id.clone();
 
@@ -98,46 +99,38 @@ fn part_2(parse_output: &ParseOutput) -> Solution {
                         &mut basin_lookup_map,
                     );
                 }
-            } else {
-                match surrounding_basins.len() {
-                    0 => {
-                        basin_ids += 1;
+                continue;
+            }
 
-                        basin_map.insert(
-                            basin_ids,
-                            Basin {
-                                fields: vec![field.clone()],
-                            },
-                        );
-                        basin_lookup_map.insert(field.clone(), basin_ids);
-                    }
-                    1 => {
-                        let other_basin_id = surrounding_basins[0];
-                        add_field_to_basin(
-                            field,
-                            other_basin_id,
-                            &mut basin_lookup_map,
-                            &mut basin_map,
-                        );
-                    }
-                    _ => {
-                        let basin_to_merge_into_id = surrounding_basins[0];
-                        add_field_to_basin(
-                            field,
-                            basin_to_merge_into_id,
-                            &mut basin_lookup_map,
-                            &mut basin_map,
-                        );
-                        for surrounding_basin_id in surrounding_basins.iter().skip(1) {
-                            connect_basins(
-                                surrounding_basin_id.clone(),
-                                basin_to_merge_into_id,
-                                &mut basin_map,
-                                &mut basin_lookup_map,
-                            );
-                        }
-                    }
-                }
+            // There is no basin at this location and no surrounding basins, so create a new one
+            if surrounding_basins.len() == 0 {
+                basin_ids += 1;
+
+                basin_map.insert(
+                    basin_ids,
+                    Basin {
+                        fields: vec![field.clone()],
+                    },
+                );
+                basin_lookup_map.insert(field.clone(), basin_ids);
+                continue;
+            }
+
+            // There is no basin at this location but there is at least one in an adjacent location so lets combine them
+            let basin_to_merge_into_id = surrounding_basins[0];
+            add_field_to_basin(
+                field,
+                basin_to_merge_into_id,
+                &mut basin_lookup_map,
+                &mut basin_map,
+            );
+            for surrounding_basin_id in surrounding_basins.iter().skip(1) {
+                connect_basins(
+                    surrounding_basin_id.clone(),
+                    basin_to_merge_into_id,
+                    &mut basin_map,
+                    &mut basin_lookup_map,
+                );
             }
         }
     }
