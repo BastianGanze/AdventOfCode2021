@@ -1,9 +1,7 @@
-#[macro_export]
-
 pub type ParseOutput = Vec<String>;
 
 pub fn parse_main() -> ParseOutput {
-    parse("src/??.txt")
+    parse("src/10.txt")
 }
 
 pub fn parse_test() -> ParseOutput {
