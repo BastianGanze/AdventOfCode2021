@@ -2,17 +2,20 @@ use crate::grid::Grid;
 
 pub type ParseOutput = Grid<10, 10>;
 
-pub fn parse_main() -> ParseOutput {
-    parse("src/11.txt")
+pub fn read_main() -> String {
+    read_file("src/11.txt")
 }
 
-pub fn parse_test() -> ParseOutput {
-    parse("src/test.txt")
+pub fn read_test() -> String {
+    read_file("src/test.txt")
 }
 
-fn parse(file_name: &str) -> ParseOutput {
+pub fn read_file(file_name: &str) -> String {
+    std::fs::read_to_string(file_name).unwrap()
+}
+
+pub fn parse(file: &String) -> ParseOutput {
     let mut output = Grid::new();
-    let file = std::fs::read_to_string(file_name).unwrap();
     let lines = file.trim().split("\n").filter(|s| s.len() > 0);
 
     for (y, line) in lines.enumerate() {
