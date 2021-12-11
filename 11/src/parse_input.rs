@@ -12,13 +12,10 @@ pub fn parse_test() -> ParseOutput {
 
 fn parse(file_name: &str) -> ParseOutput {
     let mut output = Grid::new();
+    let file = std::fs::read_to_string(file_name).unwrap();
+    let lines = file.trim().split("\n").filter(|s| s.len() > 0);
 
-    for (y, line) in std::fs::read_to_string(file_name)
-        .unwrap()
-        .split("\n")
-        .filter(|s| s.len() > 0)
-        .enumerate()
-    {
+    for (y, line) in lines.enumerate() {
         for (x, char) in line.chars().enumerate() {
             output.set_field(y as i16, x as i16, char.to_digit(10).unwrap() as u8);
         }
