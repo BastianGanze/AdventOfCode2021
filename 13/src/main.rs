@@ -30,7 +30,7 @@ fn part_1(parse_output: &ParseOutput) -> Solution {
         vec![]
     };
 
-    for point in points.drain(0..) {
+    for point in points.drain(..) {
         unique_point_hash_set.insert(fold_point(point, &y_folds, &x_folds));
     }
     unique_point_hash_set.len() as u32
@@ -40,20 +40,22 @@ fn fold_point(point: Point, folds_y: &FoldList, folds_x: &FoldList) -> Point {
     let mut y = point.0;
     let mut x = point.1;
 
-    for fold in folds_y.iter() {
-        if &y < fold {
+    for fold_line in folds_y {
+        if &y < fold_line {
             continue;
         }
 
-        y = (2 * fold) - y;
+        y = (2 * fold_line) - y;
     }
 
-    for fold in folds_x.iter() {
-        if &x < fold {
+    for fold_line in folds_x {
+        if &x < fold_line {
             continue;
         }
-        x = (2 * fold) - x;
+
+        x = (2 * fold_line) - x;
     }
+
     (y, x)
 }
 
@@ -133,7 +135,7 @@ mod tests {
         b.iter(|| {
             assert_eq!(
                 part_2(black_box(&parse_output)),
-                "###   ##  ###  #  #  ##  ###  #  # #   \n#  # #  # #  # #  # #  # #  # # #  #   \n#  # #    #  # #### #  # #  # ##   #   \n###  #    ###  #  # #### ###  # #  #   \n#    #  # #    #  # #  # # #  # #  #   \n#     ##  #    #  # #  # #  # #  # ####\n"
+                "   ###  ##   ## ## ##  ##   ## ## # ###\n ## # ## # ## # ## # ## # ## # # ## ###\n ## # #### ## #    # ## # ## #  ### ###\n   ## ####   ## ## #    #   ## # ## ###\n #### ## # #### ## # ## # # ## # ## ###\n #####  ## #### ## # ## # ## # ## #    \n"
             );
         });
     }
