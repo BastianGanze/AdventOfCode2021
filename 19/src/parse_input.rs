@@ -1,4 +1,5 @@
 use crate::algebruh::{Point, Transformation};
+use std::collections::HashSet;
 
 pub type Transformations = [Transformation; 24];
 pub type ParseOutput = (Vec<Vec<Point>>, Transformations);
@@ -47,24 +48,60 @@ pub fn parse(file: &String) -> ParseOutput {
     (scanners, get_rotations())
 }
 
-fn get_rotations() -> [(usize, usize, usize, i32, i32, i32); 24] {
-    let mut transformations = [(0, 0, 0, 0, 0, 0); 24];
-    let swaps = [
-        (0, 1, 2),
-        (0, 2, 1),
-        (1, 0, 2),
-        (1, 2, 0),
-        (2, 0, 1),
-        (2, 1, 0),
-    ];
-    let orientations = [(-1, -1, -1), (1, -1, -1), (1, 1, -1), (1, 1, 1)];
-    let mut i = 0;
-    for s in swaps {
-        for o in orientations {
-            transformations[i] = (s.0, s.1, s.2, o.0, o.1, o.2);
-            i += 1;
+fn get_rotations() -> Transformations {
+    /*
+    let mut hashb: HashSet<Transformation> = HashSet::new();
+    let mut t = (0, 1, 2, 1, 1, 1);
+    for _ in 0..4 {
+        t = rotate_around_x(t);
+        hashb.insert(t);
+        for _ in 0..4 {
+            t = rotate_around_y(t);
+            hashb.insert(t);
+            for _ in 0..4 {
+                t = rotate_around_z(t);
+                hashb.insert(t);
+            }
         }
     }
+    fn rotate_around_z(t: Transformation) -> Transformation {
+        (t.1, t.0, t.2, -t.4, t.3, t.5)
+    }
 
-    transformations
+    fn rotate_around_y(t: Transformation) -> Transformation {
+        (t.2, t.1, t.0, -t.5, t.4, t.3)
+    }
+
+    fn rotate_around_x(t: Transformation) -> Transformation {
+        (t.0, t.2, t.1, t.3, -t.5, t.4)
+    }
+
+
+    */
+    [
+        (2, 0, 1, -1, -1, 1),
+        (2, 0, 1, -1, 1, -1),
+        (1, 2, 0, -1, -1, 1),
+        (2, 1, 0, -1, 1, 1),
+        (0, 2, 1, -1, 1, 1),
+        (0, 1, 2, -1, -1, 1),
+        (2, 0, 1, 1, -1, -1),
+        (1, 2, 0, 1, -1, -1),
+        (1, 0, 2, -1, 1, 1),
+        (1, 0, 2, 1, 1, -1),
+        (0, 1, 2, -1, 1, -1),
+        (0, 2, 1, 1, 1, -1),
+        (1, 0, 2, -1, -1, -1),
+        (1, 2, 0, -1, 1, -1),
+        (0, 1, 2, 1, 1, 1),
+        (0, 1, 2, 1, -1, -1),
+        (2, 1, 0, 1, 1, -1),
+        (2, 0, 1, 1, 1, 1),
+        (1, 0, 2, 1, -1, 1),
+        (0, 2, 1, -1, -1, -1),
+        (2, 1, 0, 1, -1, 1),
+        (2, 1, 0, 1, -1, -1),
+        (1, 2, 0, 1, 1, 1),
+        (0, 2, 1, 1, -1, 1),
+    ]
 }
