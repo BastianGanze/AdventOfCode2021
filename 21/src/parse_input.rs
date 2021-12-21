@@ -14,9 +14,10 @@ pub fn read_file(file_name: &str) -> String {
 
 pub fn parse(file: &String) -> ParseOutput {
     let (p1, p2) = file.split_once("Player 2 starting position:").unwrap();
-
     (
-        p1.trim().chars().last().unwrap().to_digit(10).unwrap() as i32,
+        p1.trim()["Player 1 starting position: ".len()..]
+            .parse()
+            .unwrap(),
         p2.trim().parse().unwrap(),
     )
 }
