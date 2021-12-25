@@ -55,6 +55,10 @@ name = "aoc-day2"
 version = "0.1.0"
 
 [[package]]
+name = "aoc-day20"
+version = "0.1.0"
+
+[[package]]
 name = "aoc-day21"
 version = "0.1.0"
 
