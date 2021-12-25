@@ -1,10 +1,12 @@
 #![feature(test)]
 #![feature(int_abs_diff)]
+#![feature(map_first_last)]
 
 use crate::parse_input::{parse, read_main, ParseOutput};
-use algebruh::Cube;
+use algebruh::Instruction;
 
-use std::collections::{HashMap, HashSet, VecDeque};
+use crate::algebruh::{Point2D, Point3D};
+use std::collections::{BTreeSet, HashMap, HashSet, VecDeque};
 
 pub mod algebruh;
 pub mod parse_input;
@@ -18,13 +20,13 @@ fn main() {
 }
 
 fn part_2(parse_output: &ParseOutput) -> Solution {
-    let mut instructions: Vec<Cube> = parse_output.clone();
+    let mut instructions: Vec<Instruction> = parse_output.clone();
 
     start_reactor(&mut instructions)
 }
 
 fn part_1(parse_output: &ParseOutput) -> Solution {
-    let mut cubes: Vec<Cube> = parse_output
+    let mut cubes: Vec<Instruction> = parse_output
         .clone()
         .into_iter()
         .filter(|c| {
@@ -40,17 +42,21 @@ fn part_1(parse_output: &ParseOutput) -> Solution {
     start_reactor(&mut cubes)
 }
 
-fn start_reactor(instructions: &mut Vec<Cube>) -> i64 {
-    let plane_sweep_by_z_axis = get_plane_sweep_by_z_axis(instructions);
+fn start_reactor(instructions: &mut Vec<Instruction>) -> i64 {
+    let mut plane_sweep_by_z_axis = get_plane_sweep_by_z_axis(instructions);
+    let mut current_solutions: VecDeque<(Point2D, Point2D)> =
+        VecDeque::with_capacity(instructions.len());
 
-    let mut active_instructions: HashSet<usize> = HashSet::new();
+    let mut active_instructions: BTreeSet<usize> = BTreeSet::new();
 
     let mut ones_active = 0;
-    for ((start_z, instructions_start), (end_z, instructions_end)) in plane_sweep_by_z_axis {
+    for ((start_z, mut instructions_start), (end_z, instructions_end)) in
+        plane_sweep_by_z_axis.drain(..)
+    {
         // Algorithm
 
-        for inst_i in instructions_start {
-            active_instructions.insert(inst_i.clone());
+        for inst_i in instructions_start.drain(..) {
+            active_instructions.insert(inst_i);
         }
         // Get active cube list by operation order
         // Push first of that list in current_solution VecDeque
@@ -61,32 +67,52 @@ fn start_reactor(instructions: &mut Vec<Cube>) -> i64 {
         // if it is not, push back to current_solutions vector
         // If it is, apply operation and push back solutions of operation
         // After loop: Count volumes in current_solution
-        let mut slices_of_instructions = get_slice_of_active_ordered_instructions(
-            instructions,
-            &mut active_instructions,
-            start_z,
-            end_z,
-        );
 
-        if slices_of_instructions.len() == 0 {
+        if active_instructions.len() == 0 {
             continue;
         }
 
-        let mut current_solutions: VecDeque<Cube> = VecDeque::new();
-        current_solutions.push_back(slices_of_instructions.pop_front().unwrap());
+        let mut start_i = 0;
+        let mut skip = 1;
+        for (i, int_i) in active_instructions.iter().enumerate() {
+            if instructions[*int_i].sets_1 {
+                start_i = *int_i;
+                break;
+            }
+            skip += 1;
+        }
 
-        for operation in slices_of_instructions.drain(..) {
+        if skip > active_instructions.len() {
+            continue;
+        }
+
+        let first = &instructions[*active_instructions.get(&(start_i)).unwrap()];
+        current_solutions.push_back(([first.min[0], first.min[1]], [first.max[0], first.max[1]]));
+
+        for i in active_instructions.iter().skip(skip) {
+            let temp = &instructions[*i];
+            let operation = ([temp.min[0], temp.min[1]], [temp.max[0], temp.max[1]]);
             for _ in 0..current_solutions.len() {
                 let slice = current_solutions.pop_front().unwrap();
-                current_solutions.extend(calculate_intersections_2d(slice, &operation));
+                if let Some(intersection_rec) =
+                    Instruction::intersection_rectangle_2d(&slice, &operation)
+                {
+                    Instruction::split_by_containing_rectangle_2d(
+                        &slice,
+                        &intersection_rec,
+                        &mut current_solutions,
+                    );
+                } else {
+                    current_solutions.push_back(slice);
+                }
             }
-            if operation.sets_1 {
+            if temp.sets_1 {
                 current_solutions.push_back(operation);
             }
         }
 
         for s in current_solutions.drain(..) {
-            ones_active += s.one_amount;
+            ones_active += Instruction::vol([s.0[0], s.0[1], start_z], [s.1[0], s.1[1], end_z]);
         }
 
         for inst_i in instructions_end {
@@ -97,57 +123,8 @@ fn start_reactor(instructions: &mut Vec<Cube>) -> i64 {
     ones_active
 }
 
-fn calculate_intersections_2d(cube: Cube, operation: &Cube) -> Vec<Cube> {
-    if let Some((min, max)) = cube.intersection_rectangle_2d(operation) {
-        let int_rec_cube_with_operation = Cube::from_m(min, max, operation.sets_1, -1);
-
-        let split_recs: Vec<Cube> = cube
-            .split_by_containing_rectangle_2d(&int_rec_cube_with_operation)
-            .into_iter()
-            .map(|(min, max)| Cube::from_m(min, max, true, -1))
-            .collect();
-
-        return split_recs;
-    }
-
-    vec![cube]
-}
-
-fn get_slice_of_active_ordered_instructions(
-    cubes: &mut Vec<Cube>,
-    active_cubes: &mut HashSet<usize>,
-    start_z: i64,
-    end_z: i64,
-) -> VecDeque<Cube> {
-    let mut active_cube_slices = Vec::new();
-    for c in active_cubes.iter() {
-        let cube = &cubes[*c];
-        active_cube_slices.push(Cube::from(
-            cube.min[0],
-            cube.max[0],
-            cube.min[1],
-            cube.max[1],
-            start_z,
-            end_z,
-            cube.sets_1,
-            cube.order,
-        ));
-    }
-    active_cube_slices.sort_by(|c1, c2| c1.order.cmp(&c2.order));
-
-    // Remove from start of the list until set_ones appears
-    let mut queue = VecDeque::from_iter(active_cube_slices.into_iter());
-    while let Some(s) = queue.front() {
-        if s.sets_1 {
-            break;
-        }
-        queue.pop_front();
-    }
-    queue
-}
-
 fn get_plane_sweep_by_z_axis(
-    instructions: &mut Vec<Cube>,
+    instructions: &mut Vec<Instruction>,
 ) -> Vec<((i64, Vec<usize>), (i64, Vec<usize>))> {
     let mut prep: HashMap<i64, Vec<usize>> = HashMap::new();
 

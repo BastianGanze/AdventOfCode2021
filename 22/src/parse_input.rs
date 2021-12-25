@@ -1,6 +1,6 @@
-use crate::Cube;
+use crate::Instruction;
 
-pub type ParseOutput = Vec<Cube>;
+pub type ParseOutput = Vec<Instruction>;
 
 pub fn read_main() -> String {
     read_file("src/22.txt")
@@ -38,10 +38,6 @@ pub fn parse(file: &String) -> ParseOutput {
     cuboids
         .iter()
         .enumerate()
-        .map(|(i, c)| {
-            Cube::from(
-                c.1 .0, c.1 .1, c.2 .0, c.2 .1, c.3 .0, c.3 .1, c.0, i as i64,
-            )
-        })
+        .map(|(i, c)| Instruction::from(c.1 .0, c.1 .1, c.2 .0, c.2 .1, c.3 .0, c.3 .1, c.0))
         .collect()
 }
